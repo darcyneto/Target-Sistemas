@@ -105,5 +105,5 @@ Os arquivos são criados automaticamente na primeira execução com dados inicia
 
 ## Desenvolvido por
 
-Target Sistemas
+Darcy Neto
 
