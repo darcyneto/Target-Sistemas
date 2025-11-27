@@ -1,0 +1,371 @@
+@model List<Produto>
+@{
+    ViewData["Title"] = "Movimentação de Estoque";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Estoque Atual</h2>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNovaMovimentacao">
+            Nova Movimentação
+        </button>
+    </div>
+    <hr />
+
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Sucesso"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="tabelaEstoque">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código do Produto</th>
+                        <th>Descrição do Produto</th>
+                        <th class="text-end">Quantidade em Estoque</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var produto in Model)
+                    {
+                        <tr data-codigo="@produto.CodigoProduto" data-estoque-original="@produto.Estoque">
+                            <td>@produto.CodigoProduto</td>
+                            <td>@produto.DescricaoProduto</td>
+                            <td class="text-end fw-bold estoque-quantidade">@produto.Estoque</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-5">
+            <h4>Controle de Movimentações</h4>
+            <hr />
+            <div id="listaMovimentacoes">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Código</th>
+                                <th>Descrição do Produto</th>
+                                <th>Descrição da Movimentação</th>
+                                <th>Status</th>
+                                <th class="text-end">Quantidade</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyMovimentacoes">
+                            <tr id="linhaSemMovimentacoes">
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    Nenhuma movimentação registrada ainda.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            Nenhum produto encontrado no estoque.
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="modalNovaMovimentacao" tabindex="-1" aria-labelledby="modalNovaMovimentacaoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalNovaMovimentacaoLabel">Nova Movimentação de Estoque</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formNovaMovimentacao" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="mb-3">
+                        <label for="Descricao" class="form-label">Descrição</label>
+                        <input name="Descricao" id="Descricao" class="form-control" placeholder="Ex: Entrada por Compra, Saída por Venda" required />
+                        <span class="text-danger" id="descricao-error"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="CodigoProduto" class="form-label">Código do Produto</label>
+                        <select name="CodigoProduto" id="CodigoProduto" class="form-select" required>
+                            <option value="">Selecione um produto</option>
+                            @if (Model != null)
+                            {
+                                @foreach (var produto in Model)
+                                {
+                                    <option value="@produto.CodigoProduto" data-estoque="@produto.Estoque">@produto.CodigoProduto - @produto.DescricaoProduto (Estoque: @produto.Estoque)</option>
+                                }
+                            }
+                        </select>
+                        <span class="text-danger" id="codigoProduto-error"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="TipoOperacao" class="form-label">Tipo de Operação</label>
+                        <select name="TipoOperacao" id="TipoOperacao" class="form-select" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="Entrada">Entrada</option>
+                            <option value="Saída">Saída</option>
+                        </select>
+                        <span class="text-danger" id="tipoOperacao-error"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Quantidade" class="form-label">Quantidade</label>
+                        <input name="Quantidade" id="Quantidade" class="form-control" type="number" min="1" required />
+                        <span class="text-danger" id="quantidade-error"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar Movimentação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalConfirmarRemocao" tabindex="-1" aria-labelledby="modalConfirmarRemocaoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalConfirmarRemocaoLabel">Confirmar Remoção</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja remover esta movimentação?</p>
+                <p class="text-muted small mb-0">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarRemocao">Remover</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            function obterMovimentacoes() {
+                var movimentacoes = localStorage.getItem('movimentacoesEstoque');
+                return movimentacoes ? JSON.parse(movimentacoes) : [];
+            }
+
+            function salvarMovimentacoes(movimentacoes) {
+                localStorage.setItem('movimentacoesEstoque', JSON.stringify(movimentacoes));
+            }
+
+            function obterNomeProduto(codigoProduto) {
+                var $row = $('#tabelaEstoque tbody tr[data-codigo="' + codigoProduto + '"]');
+                if ($row.length > 0) {
+                    return $row.find('td').eq(1).text();
+                }
+                return 'Produto não encontrado';
+            }
+
+            function renderizarMovimentacoes() {
+                var movimentacoes = obterMovimentacoes();
+                var tbody = $('#tbodyMovimentacoes');
+                
+                tbody.empty();
+                
+                if (movimentacoes.length === 0) {
+                    var linhaVazia = $('<tr id="linhaSemMovimentacoes">');
+                    linhaVazia.append($('<td>').attr('colspan', '7').addClass('text-center text-muted py-4').text('Nenhuma movimentação registrada ainda.'));
+                    tbody.append(linhaVazia);
+                    return;
+                }
+                
+                var movimentacoesOrdenadas = movimentacoes.slice().sort(function(a, b) {
+                    return new Date(b.dataMovimentacao) - new Date(a.dataMovimentacao);
+                });
+                
+                movimentacoesOrdenadas.forEach(function(mov) {
+                    var dataHora = new Date(mov.dataMovimentacao).toLocaleString('pt-BR');
+                    var statusBadge = mov.tipoOperacao === 'Entrada' ? 
+                        '<span class="badge bg-success fs-6">Entrada</span>' : 
+                        '<span class="badge bg-danger fs-6">Saída</span>';
+                    
+                    var nomeProduto = obterNomeProduto(mov.codigoProduto);
+                    
+                    var row = $('<tr>');
+                    row.append($('<td>').html('<small>' + dataHora + '</small>'));
+                    row.append($('<td>').html('<strong>' + mov.codigoProduto + '</strong>'));
+                    row.append($('<td>').text(nomeProduto));
+                    row.append($('<td>').text(mov.descricao));
+                    row.append($('<td>').html(statusBadge));
+                    row.append($('<td>').addClass('text-end fw-bold').text(mov.quantidade));
+                    row.append($('<td>').addClass('text-center').html(
+                        '<button class="btn btn-sm btn-danger btn-remover" data-id="' + mov.id + '">Remover</button>'
+                    ));
+                    tbody.append(row);
+                });
+            }
+
+            function atualizarEstoqueVisual() {
+                var movimentacoes = obterMovimentacoes();
+                
+                $('#tabelaEstoque tbody tr').each(function() {
+                    var $row = $(this);
+                    var codigoProduto = parseInt($row.data('codigo'));
+                    var estoqueOriginal = parseInt($row.data('estoque-original'));
+                    var estoqueAtual = estoqueOriginal;
+                    
+                    movimentacoes.forEach(function(mov) {
+                        if (parseInt(mov.codigoProduto) === codigoProduto) {
+                            if (mov.tipoOperacao === 'Entrada') {
+                                estoqueAtual += parseInt(mov.quantidade);
+                            } else {
+                                estoqueAtual -= parseInt(mov.quantidade);
+                            }
+                        }
+                    });
+                    
+                    $row.find('.estoque-quantidade').text(estoqueAtual);
+                });
+            }
+
+            function validarFormulario() {
+                var descricao = $('#Descricao').val().trim();
+                var codigoProduto = $('#CodigoProduto').val();
+                var tipoOperacao = $('#TipoOperacao').val();
+                var quantidade = parseInt($('#Quantidade').val());
+                
+                $('.text-danger').text('');
+                var temErro = false;
+                
+                if (!descricao) {
+                    $('#descricao-error').text('A descrição é obrigatória.');
+                    temErro = true;
+                }
+                
+                if (!codigoProduto) {
+                    $('#codigoProduto-error').text('O código do produto é obrigatório.');
+                    temErro = true;
+                }
+                
+                if (!tipoOperacao) {
+                    $('#tipoOperacao-error').text('O tipo de operação é obrigatório.');
+                    temErro = true;
+                }
+                
+                if (!quantidade || quantidade < 1) {
+                    $('#quantidade-error').text('A quantidade deve ser maior que zero.');
+                    temErro = true;
+                }
+                
+                if (tipoOperacao === 'Saída' && codigoProduto) {
+                    var $row = $('#tabelaEstoque tbody tr[data-codigo="' + codigoProduto + '"]');
+                    var estoqueAtual = parseInt($row.find('.estoque-quantidade').text());
+                    
+                    if (quantidade > estoqueAtual) {
+                        $('#quantidade-error').text('Estoque insuficiente. Estoque atual: ' + estoqueAtual);
+                        temErro = true;
+                    }
+                }
+                
+                return !temErro;
+            }
+
+            $('#formNovaMovimentacao').on('submit', function(e) {
+                e.preventDefault();
+                
+                if (!validarFormulario()) {
+                    return;
+                }
+                
+                var movimentacao = {
+                    id: Date.now(),
+                    descricao: $('#Descricao').val().trim(),
+                    codigoProduto: $('#CodigoProduto').val(),
+                    tipoOperacao: $('#TipoOperacao').val(),
+                    quantidade: parseInt($('#Quantidade').val()),
+                    dataMovimentacao: new Date().toISOString()
+                };
+                
+                var movimentacoes = obterMovimentacoes();
+                movimentacoes.push(movimentacao);
+                salvarMovimentacoes(movimentacoes);
+                
+                atualizarEstoqueVisual();
+                renderizarMovimentacoes();
+                
+                $('#modalNovaMovimentacao').modal('hide');
+                $('#formNovaMovimentacao')[0].reset();
+                $('.text-danger').text('');
+                
+                var mensagem = 'Movimentação registrada com sucesso!';
+                if ($('.alert-success').length === 0) {
+                    $('.container.mt-4').prepend(
+                        '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                        mensagem +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                        '</div>'
+                    );
+                }
+            });
+            
+            var movimentacaoParaRemover = null;
+
+            $(document).on('click', '.btn-remover', function() {
+                movimentacaoParaRemover = $(this).data('id');
+                $('#modalConfirmarRemocao').modal('show');
+            });
+
+            $('#btnConfirmarRemocao').on('click', function() {
+                if (movimentacaoParaRemover === null) {
+                    return;
+                }
+                
+                var id = movimentacaoParaRemover;
+                var movimentacoes = obterMovimentacoes();
+                movimentacoes = movimentacoes.filter(function(mov) {
+                    return mov.id !== id;
+                });
+                salvarMovimentacoes(movimentacoes);
+                atualizarEstoqueVisual();
+                renderizarMovimentacoes();
+                
+                $('#modalConfirmarRemocao').modal('hide');
+                movimentacaoParaRemover = null;
+                
+                $('.alert-success').remove();
+                $('.container.mt-4').prepend(
+                    '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                    'Movimentação removida com sucesso!' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>'
+                );
+            });
+
+            $('#modalConfirmarRemocao').on('hidden.bs.modal', function() {
+                movimentacaoParaRemover = null;
+            });
+            
+            $('#modalNovaMovimentacao').on('hidden.bs.modal', function() {
+                $('#formNovaMovimentacao')[0].reset();
+                $('.text-danger').text('');
+            });
+            
+            renderizarMovimentacoes();
+            atualizarEstoqueVisual();
+        });
+    </script>
+}
+

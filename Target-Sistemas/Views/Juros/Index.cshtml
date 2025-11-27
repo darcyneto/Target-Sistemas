@@ -1,0 +1,84 @@
+@model CalculoJurosViewModel
+@{
+    ViewData["Title"] = "Cálculo de Juros";
+}
+
+<div class="container mt-4">
+    <h2>Cálculo de Juros</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="Calcular" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="ValorOriginal" class="form-label">Valor Original (R$)</label>
+                    <input asp-for="ValorOriginal" class="form-control" type="number" step="0.01" min="0.01" />
+                    <span asp-validation-for="ValorOriginal" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="DataVencimento" class="form-label">Data de Vencimento</label>
+                    <input asp-for="DataVencimento" class="form-control" type="date" />
+                    <span asp-validation-for="DataVencimento" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">Calcular</button>
+                </div>
+            </form>
+
+            <div class="alert alert-info mt-4">
+                <strong>Regra de Cálculo:</strong><br />
+                Multa de 2,5% ao dia sobre o valor original, calculada a partir da data de vencimento até a data de hoje.
+            </div>
+        </div>
+
+        @if (Model.DiasAtraso > 0 || (Model.ValorOriginal > 0 && Model.DataVencimento != default))
+        {
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Resultado do Cálculo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong>Valor Original:</strong><br />
+                            <span class="fs-5">@Model.ValorOriginal.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <strong>Data de Vencimento:</strong><br />
+                            <span class="fs-6">@Model.DataVencimento.ToString("dd/MM/yyyy")</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <strong>Dias em Atraso:</strong><br />
+                            <span class="fs-5 @(Model.DiasAtraso > 0 ? "text-danger" : "text-success")">
+                                @Model.DiasAtraso dia(s)
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <strong>Valor da Multa:</strong><br />
+                            <span class="fs-5 text-danger">@Model.ValorMulta.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</span>
+                        </div>
+
+                        <hr />
+
+                        <div class="mb-0">
+                            <strong>Valor Total a Pagar:</strong><br />
+                            <span class="fs-4 fw-bold text-primary">@Model.ValorTotalPagar.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

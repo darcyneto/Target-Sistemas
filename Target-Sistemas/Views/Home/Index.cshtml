@@ -1,0 +1,39 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center mt-5">
+    <h1 class="display-4">Target Sistemas</h1>
+    <p class="lead">Sistema de Gestão Integrada</p>
+    <hr />
+    <div class="row mt-5">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Comissão de Vendas</h5>
+                    <p class="card-text">Calcule as comissões dos vendedores baseadas em suas vendas realizadas.</p>
+                    <a asp-controller="Comissao" asp-action="Index" class="btn btn-primary">Acessar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Movimentação de Estoque</h5>
+                    <p class="card-text">Gerencie entradas e saídas de produtos no estoque.</p>
+                    <a asp-controller="Estoque" asp-action="Index" class="btn btn-primary">Acessar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Cálculo de Juros</h5>
+                    <p class="card-text">Calcule o valor dos juros de títulos vencidos com multa diária.</p>
+                    <a asp-controller="Juros" asp-action="Index" class="btn btn-primary">Acessar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

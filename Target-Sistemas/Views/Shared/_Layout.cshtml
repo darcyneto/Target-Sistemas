@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Target Sistemas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="d-flex flex-column min-vh-100">
+        <header>
+            <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+                <div class="container-fluid">
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">Target Sistemas</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Comissao" asp-action="Index">Comissão de Vendas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Estoque" asp-action="Index">Movimentação de Estoque</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Juros" asp-action="Index">Cálculo de Juros</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <main class="flex-grow-1">
+            <div class="container">
+                <div class="pb-3">
+                    @RenderBody()
+                </div>
+            </div>
+        </main>
+        <footer class="border-top footer text-muted mt-auto">
+            <div class="container text-center py-3">
+                &copy; 2025 - Target Sistemas
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
